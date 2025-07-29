@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Install dependencies and zip
         run: |
@@ -30,7 +30,21 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'ca-central-1'
         run: |
+          # Deploy the Lambda function
           aws lambda update-function-code \
-            --function-name lambda_handler \
+            --function-name LAMBDA-FUNCTION \
             --zip-file fileb://lambda.zip \
             --region $AWS_REGION
+
+          # Create or update Lambda URL
+          # Replace this with the correct Lambda function name and URL configuration
+          aws lambda add-function-url-permission \
+            --function-name LAMBDA-FUNCTION \
+            --principal '*' \
+            --statement-id "lambda-deploy-$(date +%s)" \
+            --region $AWS_REGION
+
+          # Optionally, output the Lambda URL
+          URL=$(aws lambda get-function-url --function-name LAMBDA-FUNCTION --region $AWS_REGION --query 'FunctionUrl' --output text)
+          echo "Lambda function URL: $URL"
+
